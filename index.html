@@ -4289,8 +4289,6 @@ const App = {
       this.setAnimeMode(pending.value, true, { skipAgeGate: true });
     } else if (pending.type === 'start-session') {
       this.startSession({ skipAgeGate: true });
-    } else if (pending.type === 'start-virat-session') {
-      ViratMode.start();
     }
   },
 
@@ -5263,21 +5261,14 @@ const ViratMode = {
     if (this.state.facesLoading) return this.state.facesLoading;
     this.state.facesLoading = (async () => {
       await preloadAssets({ stimulusType: 'human_faces' }).catch(() => null);
-      this.state.faces = FACES.map(f => f.file);
+      this.state.faces = FACES
+        .filter(f => /human_faces\/face_\d+\.jpg$/.test(f.file))
+        .map(f => f.file);
     })();
     return this.state.facesLoading;
   },
 
-  isAgeVerified() {
-    try { return sessionStorage.getItem('age_verified') === '1'; } catch (e) { return false; }
-  },
-
   async start() {
-    if (!this.isAgeVerified()) {
-      App.pendingAgeAction = { type: 'start-virat-session' };
-      App.openAgeGate();
-      return;
-    }
     const btn = document.getElementById('btn-init-session');
     if (btn) { btn.textContent = 'Loading Stimuli...'; btn.disabled = true; }
     try {
